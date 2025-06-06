@@ -1,23 +1,45 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const WebSocketHandler = ({ onMessage }) => {
+    const socketRef = useRef(null);
+    const retryInterval = useRef(1000);
+
     useEffect(() => {
-        const socket = new WebSocket("ws://192.168.1.22:8080/ws");
+        let isUnmounted = false;
+        const connect = () => {
+            const socket = new WebSocket("ws://192.168.1.22:8080/ws");
+            socketRef.current = socket;
 
-        socket.onmessage = (event) => {
-            onMessage(event.data);
-        };
+            socket.onopen = () => {
+                console.log("✅ WebSocket connected");
+                retryInterval.current = 1000; // Reset retry on success
+            };
 
-        socket.onopen = () => {
-            console.log("WebSocket connected.");
-        };
+            socket.onmessage = (event) => {
+                onMessage(event.data);
+            };
 
-        socket.onerror = (err) => {
-            console.error("WebSocket error:", err);
-        };
+            socket.onerror = (err) => {
+                console.error("❌ WebSocket error:", err);
+            };
 
+            socket.onclose = () => {
+                console.warn("⚠️ WebSocket disconnected. Reconnecting...");
+                if (!isUnmounted) {
+                    setTimeout(() => {
+                        retryInterval.current = Math.min(retryInterval.current * 2, 10000); // Max 10s
+                        connect();
+                    }, retryInterval.current);
+                }
+            };
+        }
+
+        connect();
         return () => {
-            socket.close();
+            isUnmounted = true;
+            if (socketRef.current) {
+                socketRef.current.close();
+            }
         };
     }, [onMessage]);
 
