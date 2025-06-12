@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Layout } from 'antd';
 import WebSocketHandler from './components/WebSocketHandler';
 import Message from './components/Message';
+import './App.css'
 
 const { Header, Content } = Layout;
 
@@ -17,10 +18,22 @@ function App() {
     }, []);
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#1e1e1e' }}>
-      <Header style={{ background: '#1f1f1f', color: '#fff', fontSize: '20px' }}>
+    <Layout className="layout-container">
+      <Header className="header-container">
         IDH Viewer
       </Header>
+        <div className="header-container">
+            SQL JOIN: SELECT
+            b.title,
+            a.name,
+            l.library_name
+            FROM
+            books b
+            JOIN
+            authors a ON b.author_id = a.id
+            JOIN
+            libraries l ON b.id = l.book_id;
+        </div>
       <Content style={{ background: '#1e1e1e' }}>
         <WebSocketHandler onMessage={handleRerenderNewMessage} />
         <Message messages={messages} />
