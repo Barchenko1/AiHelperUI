@@ -7,12 +7,12 @@ const WebSocketHandler = ({ onMessage }) => {
     useEffect(() => {
         let isUnmounted = false;
         const connect = () => {
-            const socket = new WebSocket("ws://192.168.1.22:8080/ws");
+            const socket = new WebSocket("ws://192.168.1.22:8080/ws", []);
             socketRef.current = socket;
 
             socket.onopen = () => {
                 console.log("✅ WebSocket connected");
-                retryInterval.current = 1000; // Reset retry on success
+                retryInterval.current = 1000;
             };
 
             socket.onmessage = (event) => {
