@@ -1,0 +1,65 @@
+name: Build & Deploy React to EC2
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      EC2_USER: ec2-user
+      DEPLOY_PATH: /var/www/react-app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        env:
+          CI: "false"
+          # Add any REACT_APP_* build-time vars here if you have them, e.g.:
+          # REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+        run: npm run build
+
+      - name: Configure SSH
+        run: |
+          install -m 600 /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Create release dir on server
+        run: |
+          TS=$(date +%Y%m%d%H%M%S)
+          echo "RELEASE=$TS" >> $GITHUB_ENV
+          ssh -i ~/.ssh/id_rsa $EC2_USER@${{ secrets.DEPLOY_HOST }} "mkdir -p $DEPLOY_PATH/releases/$TS"
+
+      - name: Rsync build to server
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/id_rsa" \
+            build/ $EC2_USER@${{ secrets.DEPLOY_HOST }}:$DEPLOY_PATH/releases/${{ env.RELEASE }}/
+
+      - name: Activate release (symlink + nginx reload)
+        run: |
+          ssh -i ~/.ssh/id_rsa $EC2_USER@${{ secrets.DEPLOY_HOST }} "\
+            ln -sfn $DEPLOY_PATH/releases/${{ env.RELEASE }} $DEPLOY_PATH/current && \
+            if command -v nginx >/dev/null 2>&1; then \
+              sudo nginx -t && sudo systemctl reload nginx || sudo systemctl restart nginx; \
+            fi \
+          "
+
+      - name: Cleanup old releases (keep last 5)
+        run: |
+          ssh -i ~/.ssh/id_rsa $EC2_USER@${{ secrets.DEPLOY_HOST }} "\
+            ls -1dt $DEPLOY_PATH/releases/* | tail -n +6 | xargs -r rm -rf \
+          "
