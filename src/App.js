@@ -3,10 +3,18 @@ import { Layout } from 'antd';
 import WebSocketHandler from './components/WebSocketHandler';
 import Message from './components/Message';
 import './App.css';
+import LoginSection from './components/LoginSection';
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
+
+function getUserSession() {
+  const raw = localStorage.getItem("usersession");
+  return raw ? JSON.parse(raw) : {};
+}
 
 function App() {
+  const [token, setToken] = useState(getUserSession().token || null);
+  const [code, setCode] = useState(getUserSession().code || null);
   const [messages, setMessages] = useState([]);
 
   // const handleListNewMessage = useCallback((msg) => {
@@ -19,16 +27,10 @@ function App() {
 
   return (
     <Layout className="layout-container">
-      <Header className="header-container">Helper UI</Header>
-      <div className="header-container">
-        SQL JOIN: SELECT b.title, a.name, l.library_name
-        FROM books b
-        JOIN authors a ON b.author_id = a.id
-        JOIN libraries l ON b.id = l.book_id;
-      </div>
+      <LoginSection code={code} setCode={setCode} token={token} setToken={setToken} />
       <Content style={{ background: '#1e1e1e' }}>
-        <WebSocketHandler onMessage={handleRerenderNewMessage} />
-        <Message messages={messages} />
+        <WebSocketHandler token={token} onMessage={handleRerenderNewMessage} />
+        <Message token={token} messages={messages} />
       </Content>
     </Layout>
   );

@@ -5,7 +5,7 @@ import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/atom-one-dark.css';
 import './Message.css';
 
-const Message = ({ messages }) => {
+const Message = ({ token, messages }) => {
     const containerRef = useRef(null);
 
     const extractMessage = (msg) => {
@@ -26,13 +26,16 @@ const Message = ({ messages }) => {
     };
 
     return (
-        <div ref={containerRef} className="massages-container">
-            {messages.map((item, index) => (
-                <div className="message-wrap" key={index}>
-                    <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[rehypeHighlight]}
-                        components={{
+    <div ref={containerRef} className="messages md">
+      {!token ? (
+        <div className="login-gate">Please log in to see messages.</div>
+      ) : (
+        messages.map((m, i) => (
+          <section key={i} className="message">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeHighlight]}
+              components={{
                             code({ inline, className, children, ...props }) {
                                 return (
                                     <code className={className} {...props}>
@@ -41,13 +44,14 @@ const Message = ({ messages }) => {
                                 );
                             },
                         }}
-                    >
-                        {extractMessage(item)}
-                    </ReactMarkdown>
-                </div>
-            ))}
-        </div>
-    );
+            >
+              {extractMessage(m)}
+            </ReactMarkdown>
+          </section>
+        ))
+      )}
+    </div>
+  );
 };
 
 export default Message;

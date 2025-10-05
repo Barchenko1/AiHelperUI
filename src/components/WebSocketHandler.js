@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react';
 
-const WebSocketHandler = ({ onMessage }) => {
+const WebSocketHandler = ({ token, onMessage }) => {
     const socketRef = useRef(null);
     const retryInterval = useRef(1000);
 
     useEffect(() => {
         let isUnmounted = false;
+        if (!token) return;
         const connect = () => {
-            const socket = new WebSocket("ws://192.168.1.22:8080/ws", []);
+            const socketUrl = new URL('ws://192.168.1.22:8080/ws');
+            socketUrl.searchParams.set("token", token);
+            const socket = new WebSocket(socketUrl.toString());
             socketRef.current = socket;
 
             socket.onopen = () => {
@@ -41,9 +44,9 @@ const WebSocketHandler = ({ onMessage }) => {
                 socketRef.current.close();
             }
         };
-    }, [onMessage]);
+    }, [token, onMessage]);
 
-    return null;
+    // return null;
 };
 
 export default WebSocketHandler;
