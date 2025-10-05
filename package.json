@@ -16,10 +16,15 @@
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "web-vitals": "^2.1.4",
-    "ws": "^8.18.2"
+    "ws": "^8.18.2",
+    "env-cmd": "^10.1.0"
   },
   "scripts": {
     "start": "react-scripts start --host 0.0.0.0",
+    "start:local": "env-cmd -f config/.env.local react-scripts start --host 0.0.0.0",
+    "build:local": "env-cmd -f config/.env.local react-scripts build",
+    "start:test": "env-cmd -f config/.env.test react-scripts start --host 0.0.0.0",
+    "build:test": "env-cmd -f config/.env.test react-scripts build",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

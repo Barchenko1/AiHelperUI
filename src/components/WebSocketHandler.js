@@ -8,7 +8,7 @@ const WebSocketHandler = ({ token, onMessage }) => {
         let isUnmounted = false;
         if (!token) return;
         const connect = () => {
-            const socketUrl = new URL('ws://192.168.1.22:8080/ws');
+            const socketUrl = new URL(`${process.env.REACT_APP_AI_SOCKET}`);
             socketUrl.searchParams.set("token", token);
             const socket = new WebSocket(socketUrl.toString());
             socketRef.current = socket;
