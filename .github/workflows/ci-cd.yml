@@ -23,14 +23,14 @@ jobs:
           cache: 'npm'
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       - name: Build
         env:
           CI: "false"
           # Add any REACT_APP_* build-time vars here if you have them, e.g.:
           # REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
-        run: npm run build
+        run: npm run build:test
 
       - name: Configure SSH
         run: |
