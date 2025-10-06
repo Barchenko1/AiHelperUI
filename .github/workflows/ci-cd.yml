@@ -46,7 +46,7 @@ jobs:
         run: |
           TS=$(date +%Y%m%d%H%M%S)
           echo "RELEASE=$TS" >> $GITHUB_ENV
-          ssh -i ~/.ssh/id_rsa $EC2_USER@${{ secrets.DEPLOY_HOST }} "mkdir -p $DEPLOY_PATH/releases/$TS"
+          ssh $EC2_USER@${{ secrets.DEPLOY_HOST }} "mkdir -p $DEPLOY_PATH/releases/$TS"
 
       - name: Rsync build to server
         run: |
