@@ -32,15 +32,22 @@ jobs:
           # REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
         run: npm run build:test
 
-      - name: Configure SSH
+      - name: Start ssh-agent and add key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Trust host key
         run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          install -m 600 /dev/null ~/.ssh/id_rsa
-          # write the multiline PEM; strip any CR characters just in case
-          printf "%s" "${{ secrets.DEPLOY_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      # now you can ssh/scp/rsync without -i:
+      - name: Create release dir on server
+        run: |
+          TS=$(date +%Y%m%d%H%M%S)
+          echo "RELEASE=$TS" >> $GITHUB_ENV
+          ssh $EC2_USER@${{ secrets.DEPLOY_HOST }} "mkdir -p $DEPLOY_PATH/releases/$TS"
 
       - name: Create release dir on server
         run: |
