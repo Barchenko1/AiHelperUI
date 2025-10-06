@@ -23,7 +23,9 @@ jobs:
           cache: 'npm'
 
       - name: Install deps
-        run: npm install
+        with:
+          node-version: 20.16.0
+        run: npm ci
 
       - name: Build
         env:
