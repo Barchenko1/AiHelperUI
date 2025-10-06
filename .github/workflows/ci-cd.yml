@@ -23,53 +23,26 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      # --- Force auth to npmjs & make npm ALWAYS send the token to npmjs ---
-      - name: Configure npm auth for npmjs
+      # --- Auth for private npmjs packages ---
+      # This ~/.npmrc makes npm ALWAYS send the token to registry.npmjs.org
+      # (helps when a dependency internally does an authenticated fetch).
+      - name: Configure npm auth
         run: |
           echo "always-auth=true" >> ~/.npmrc
-          # Important: do not quote the env var expansion below (prevents literal ${...})
-          echo //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN} >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=\${NODE_AUTH_TOKEN}" >> ~/.npmrc
+
+      - name: Show active registry (sanity check)
+        run: npm config get registry
+
+      - name: Install deps (private npmjs.com)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # --- Diagnostics: show which registry is active & any project .npmrc that might override it ---
-      - name: Diagnostics - show npm registries
-        run: |
-          echo "-> npm default registry:"
-          npm config get registry
-          echo "-> Project .npmrc (if present):"
-          if [ -f .npmrc ]; then sed -n '1,120p' .npmrc; else echo "(no project .npmrc)"; fi
-          echo "-> List scoped deps (may use different registries):"
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json','utf8'));
-            const deps = Object.assign({}, pkg.dependencies, pkg.devDependencies, pkg.optionalDependencies);
-            const scopes = [...new Set(Object.keys(deps||{}).filter(n=>n.startsWith('@')).map(n=>n.split('/')[0]))];
-            console.log(scopes.length?('Scopes: '+scopes.join(', ')):'(no scoped deps)');
-          "
-
-      # --- Install with verbose to capture the exact failing host (if any) ---
-      - name: Install deps (verbose)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          npm ci --verbose || (echo "npm ci failed with code $?" && exit 1)
-
-      # Upload npm logs so you can open them and see which registry returned 401
-      - name: Upload npm logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: npm-logs
-          path: |
-            ~/.npm/_logs/*.log
-            .npm/_logs/*.log
-          if-no-files-found: ignore
+        run: npm ci
 
       - name: Build
         env:
           CI: "false"
-        run: npm run build
+        run: npm run build:test
 
       - name: Configure SSH
         run: |
