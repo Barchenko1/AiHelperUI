@@ -16,32 +16,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js (npmjs registry)
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
 
-      # --- Auth for private npmjs packages ---
-      # This ~/.npmrc makes npm ALWAYS send the token to registry.npmjs.org
-      # (helps when a dependency internally does an authenticated fetch).
-      - name: Configure npm auth
-        run: |
-          echo "always-auth=true" >> ~/.npmrc
-          echo "//registry.npmjs.org/:_authToken=\${NODE_AUTH_TOKEN}" >> ~/.npmrc
-
-      - name: Show active registry (sanity check)
-        run: npm config get registry
-
-      - name: Install deps (private npmjs.com)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Install deps
+        with:
+          node-version: 20.16.0
         run: npm ci
 
       - name: Build
         env:
           CI: "false"
+          # Add any REACT_APP_* build-time vars here if you have them, e.g.:
+          # REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
         run: npm run build:test
 
       - name: Configure SSH
