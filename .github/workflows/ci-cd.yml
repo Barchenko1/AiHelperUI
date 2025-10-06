@@ -42,6 +42,13 @@ jobs:
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
+      - name: Prepare remote deploy dir (sudo once)
+        run: |
+          ssh $EC2_USER@${{ secrets.DEPLOY_HOST }} "\
+            sudo mkdir -p /var/www/react-app/releases /var/www/react-app/shared && \
+            sudo chown -R $EC2_USER:$EC2_USER /var/www/react-app \
+          "
+
       - name: Create release dir on server
         run: |
           TS=$(date +%Y%m%d%H%M%S)
