@@ -1,0 +1,32 @@
+.status-lights {
+  display: flex;
+  gap: 16px;
+  padding: 8px 16px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: #d4d4d4;
+  background: #1e1e1e;
+}
+
+.status-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.status-dot.green {
+  background: #2ecc71;
+  box-shadow: 0 0 6px #2ecc71;
+}
+
+.status-dot.red {
+  background: #e74c3c;
+  box-shadow: 0 0 6px #e74c3c;
+}

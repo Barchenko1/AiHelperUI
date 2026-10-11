@@ -4,6 +4,7 @@ import WebSocketHandler from './components/WebSocketHandler';
 import Message from './components/Message';
 import './App.css';
 import LoginSection from './components/LoginSection';
+import StatusLights from './components/StatusLights';
 
 const { Content } = Layout;
 
@@ -29,6 +30,7 @@ function App() {
     <Layout className="layout-container">
       <LoginSection code={code} setCode={setCode} token={token} setToken={setToken} />
       <Content style={{ background: '#1e1e1e' }}>
+        <StatusLights token={token} code={code} />
         <WebSocketHandler token={token} onMessage={handleRerenderNewMessage} />
         <Message token={token} messages={messages} />
       </Content>
