@@ -3,6 +3,7 @@ name: Build & Deploy React to EC2
 on:
   push:
     branches: [ "master" ]
+  workflow_dispatch:   # "Run workflow" button in the Actions tab
 
 jobs:
   deploy:
@@ -28,7 +29,7 @@ jobs:
       - name: Build
         env:
           CI: "false"
-          # Server base URL incl. routing prefix, e.g. https://aihelper.example.com/aihelper (repo variable)
+          # Server base URL incl. routing prefix, e.g. https://screenintegration.com/aihelper (repo variable)
           REACT_APP_AI_API: ${{ vars.REACT_APP_AI_API }}
         run: |
           if [ -z "$REACT_APP_AI_API" ]; then echo "::error::Set the REACT_APP_AI_API repository variable"; exit 1; fi
