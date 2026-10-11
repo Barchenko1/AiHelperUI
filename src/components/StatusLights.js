@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './StatusLights.css';
 
-const POLL_MS = 3000;
+const POLL_MS = 10000;
 // CLI pings every 5s and the extension every 30s; allow a couple of missed beats before going red.
 // (A client that stops or switches code says "offline" and goes red immediately.)
 const CONNECTED_WITHIN_SECONDS = { cli: 15, extension: 75 };
