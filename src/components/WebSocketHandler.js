@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { SOCKET_URL } from '../config/api';
 
 const WebSocketHandler = ({ token, onMessage }) => {
     const socketRef = useRef(null);
@@ -8,7 +9,7 @@ const WebSocketHandler = ({ token, onMessage }) => {
         let isUnmounted = false;
         if (!token) return;
         const connect = () => {
-            const socketUrl = new URL(`${process.env.REACT_APP_AI_SOCKET}`);
+            const socketUrl = new URL(SOCKET_URL);
             socketUrl.searchParams.set("token", token);
             const socket = new WebSocket(socketUrl.toString());
             socketRef.current = socket;

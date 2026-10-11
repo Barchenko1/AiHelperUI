@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './StatusLights.css';
+import { apiUrl } from '../config/api';
 
 const POLL_MS = 10000;
 // CLI pings every 5s and the extension every 30s; allow a couple of missed beats before going red.
@@ -27,7 +28,7 @@ const StatusLights = ({ token, code }) => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
         if (code) headers['X-Auth-Code'] = code;
-        const response = await fetch(`${process.env.REACT_APP_AI_API}/api/v1/status`, { headers });
+        const response = await fetch(apiUrl('/status'), { headers });
         const body = await response.json();
         if (!cancelled) {
           setStatus(body);

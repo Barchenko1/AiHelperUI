@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { apiUrl } from "../config/api";
 
 export default function LoginSection({ code, setCode, token, setToken }) {
   async function login(username, password) {
-    const response = await fetch(`${process.env.REACT_APP_AI_API}/api/v1/login`, {
+    const response = await fetch(apiUrl("/login"), {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -27,7 +28,7 @@ export default function LoginSection({ code, setCode, token, setToken }) {
     if (code) headers["X-Auth-Code"] = code;
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    await fetch(`${process.env.REACT_APP_AI_API}/api/v1/logout`, { method: "POST", headers });
+    await fetch(apiUrl("/logout"), { method: "POST", headers });
     setCode("");
     setToken("");
     localStorage.removeItem("usersession"); 
