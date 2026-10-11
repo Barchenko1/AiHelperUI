@@ -28,9 +28,11 @@ jobs:
       - name: Build
         env:
           CI: "false"
-          # Add any REACT_APP_* build-time vars here if you have them, e.g.:
-          # REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
-        run: npm run build:test
+          # Server base URL incl. routing prefix, e.g. https://aihelper.example.com/aihelper (repo variable)
+          REACT_APP_AI_API: ${{ vars.REACT_APP_AI_API }}
+        run: |
+          if [ -z "$REACT_APP_AI_API" ]; then echo "::error::Set the REACT_APP_AI_API repository variable"; exit 1; fi
+          npm run build
 
       - name: Start ssh-agent and add key
         uses: webfactory/ssh-agent@v0.9.0
