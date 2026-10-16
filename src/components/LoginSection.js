@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiUrl } from "../config/api";
 
 export default function LoginSection({ code, setCode, token, setToken }) {
@@ -12,7 +12,32 @@ export default function LoginSection({ code, setCode, token, setToken }) {
       })
     });
     if (!response.ok) throw new Error("Login failed");
-    const { code, token, expiresAt } = await response.json();
+    saveSession(await response.json());
+  }
+
+  // Another browser joins the same session with the verification code shown after login.
+  async function joinWithCode(verificationCode) {
+    const response = await fetch(apiUrl("/login"), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ code: verificationCode })
+    });
+    if (!response.ok) throw new Error("Code not valid or expired");
+    saveSession(await response.json());
+  }
+
+  useEffect(() => {
+    if (!code) return;
+    fetch(apiUrl("/login"), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ code })
+    })
+      .then(response => (response.ok ? response.json().then(saveSession) : clearSession()))
+      .catch(() => {}); // server unreachable: keep the saved session, the status light shows the problem
+  }, []);
+
+  function saveSession({ code, token, expiresAt }) {
     setCode(code);
     setToken(token);
     const usersession = {
@@ -29,9 +54,13 @@ export default function LoginSection({ code, setCode, token, setToken }) {
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
     await fetch(apiUrl("/logout"), { method: "POST", headers });
+    clearSession();
+  }
+
+  function clearSession() {
     setCode("");
     setToken("");
-    localStorage.removeItem("usersession"); 
+    localStorage.removeItem("usersession");
   }
 
   const LoginForm = ({onLogin}) => {
@@ -46,6 +75,17 @@ export default function LoginSection({ code, setCode, token, setToken }) {
     );
   };
 
+  const CodeForm = ({onJoin}) => {
+    const [verificationCode, setVerificationCode] = useState("");
+    return (
+      <form onSubmit={e => { e.preventDefault(); onJoin(verificationCode).catch(alert); }}>
+        <input value={verificationCode} onChange={e => setVerificationCode(e.target.value)}
+               placeholder="verification code" inputMode="numeric" />
+        <button>Join with code</button>
+      </form>
+    );
+  };
+
   return (
     <div style={{ fontFamily: "system-ui", padding: 16 }}>
       {token ? 
@@ -55,7 +95,10 @@ export default function LoginSection({ code, setCode, token, setToken }) {
             <button onClick={logout}>Logout</button>
           </span>
         </div> 
-        : <LoginForm onLogin={login} />
+        : <>
+            <LoginForm onLogin={login} />
+            <CodeForm onJoin={joinWithCode} />
+          </>
       }
     </div>
   );
